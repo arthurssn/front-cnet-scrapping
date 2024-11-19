@@ -20,9 +20,7 @@
       </button>
     </form>
 
-    <div id="response">
-      <pre>{{ responses }}</pre>
-    </div>
+    <div id="response"></div>
   </div>
 </template>
 
@@ -78,9 +76,14 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           this.responses = [...this.responses, data];
+          const responseContainer = document.getElementById("response");
+          const newData = document.createElement("pre");
+          newData.textContent = JSON.stringify(data, null, 2);
+          responseContainer.appendChild(newData);
         })
         .catch((error) => {
-          this.responses = `Erro: ${error}`;
+          const responseContainer = document.getElementById("response");
+          responseContainer.innerHTML = `<p>Erro: ${error.message}</p>`;
         });
     },
   },

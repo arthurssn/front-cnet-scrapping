@@ -3,6 +3,7 @@
     <h1>Verificação CAPTCHA</h1>
     <form @submit.prevent="submitForm">
       <div
+        ref="captcha"
         class="h-captcha"
         :data-sitekey="siteKey"
         data-size="invisible"
@@ -21,35 +22,41 @@
   </div>
 </template>
 
-<script lang="ts">
-declare global {
-  interface Window {
-    hcaptcha: any;
-  }
-}
-
+<script>
 export default {
   data() {
     return {
       siteKey: "b8bbded1-9d04-4ace-9952-b67cde081a7b",
+      captchaId: null, // Armazena o ID do hCaptcha
       response: "",
+      activeButtonId: null,
     };
   },
   mounted() {
+    // Carrega o script do hCaptcha
     const script = document.createElement("script");
     script.src = "https://hcaptcha.com/1/api.js";
     script.async = true;
     script.defer = true;
+    script.onload = this.initializeCaptcha; // Inicializa o hCaptcha após carregar
     document.head.appendChild(script);
 
-    window.onsubmit = this.onSubmit;
+    // Define a callback global para o hCaptcha
+    window.onSubmit = this.onSubmit;
   },
-
   methods: {
+    initializeCaptcha() {
+      // Renderiza manualmente o hCaptcha
+      this.captchaId = window.hcaptcha.render(this.$refs.captcha, {
+        sitekey: this.siteKey,
+        size: "invisible",
+        callback: this.onSubmit,
+      });
+    },
     submitForm(event) {
-      const button = event.submitter;
+      const button = event.submitter; // Obtém o botão que disparou o evento
       this.activeButtonId = button.id;
-      window.hcaptcha.execute();
+      window.hcaptcha.execute(this.captchaId); // Executa o hCaptcha manualmente
     },
     onSubmit(token) {
       const url = new URL(
